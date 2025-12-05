@@ -1,0 +1,54 @@
+services:
+  fix-permissions:
+    image: alpine:latest
+    command: sh -c "chown -R 1500:1500 /data && chmod -R 755 /data && chown -R 1500:1500 /plugins && chmod -R 755 /plugins"
+    volumes:
+      - influxdb3_data:/data
+      - influxdb3_plugins:/plugins
+    restart: "no"
+
+  influxdb3-core:
+    image: influxdb:3.3.0-core
+    restart: unless-stopped
+    depends_on:
+      - fix-permissions
+    ports:
+      - 8181:8181
+    command:
+      - influxdb3
+      - serve
+      - --node-id=node0
+      - --object-store=file
+      - --data-dir=/var/lib/influxdb3/data
+      - --plugin-dir=/var/lib/influxdb3/plugins
+    volumes:
+      - influxdb3_data:/var/lib/influxdb3/data
+      - influxdb3_plugins:/var/lib/influxdb3/plugins
+#     - type: bind
+#       # Path to store data on your host system
+#       source: ./influxdb3/data
+#       # Path to store data in the container
+#       target: /var/lib/influxdb3/data
+#     - type: bind
+#       # Path to store plugins on your host system
+#       source: ./influxdb3/plugins
+#       # Path to store plugins in the container
+#       target: /var/lib/influxdb3/plugins
+
+#  influxdb3-explorer:
+#    image: influxdata/influxdb3-ui:1.1.0
+#    ports:
+#      - 8888:80
+#      - 8889:8888
+#    volumes:
+#      - ./explorer/db:/db:rw
+#      - ./explorer/config:/app-root/config:ro
+#      - ./explorer/ssl:/etc/nginx/ssl:ro
+#    command: ["--mode=admin"]
+#    depends_on:
+#      - influxdb3-core
+
+volumes:
+  influxdb3_data:
+  influxdb3_plugins:
+    driver: local
