@@ -9,7 +9,7 @@ services:
 
   influxdb3-core:
     image: influxdb:3.7.0-core
-    restart: unless-stopped
+    restart: always
     depends_on:
       - fix-permissions
     ports:
